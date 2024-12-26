@@ -1,1 +1,21 @@
+// main Program
+
+import javafx.application.Application
+import javafx.scene.Scene
+import javafx.stage.Stage
+import frontend.Home
+
+object CalculatorApp extends App {
+  Application.launch(classOf[Calculator], args: _*)
+}
+
+class Calculator extends Application {
+
+  override def start(primaryStage: Stage): Unit = {
+    primaryStage.setTitle("Scientific Calculator")
+    primaryStage.setScene(new Scene(new Home()))
+
+    primaryStage.show()
+  }
+}
 
