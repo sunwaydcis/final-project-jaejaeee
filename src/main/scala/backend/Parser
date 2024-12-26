@@ -1,0 +1,141 @@
+import math.{sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, log, exp, sqrt, Pi, E}
+import scala.math.BigDecimal
+
+object Parser {
+
+  val precedence: Map[Char, Int] = Map(
+    '+' -> 1, '-' -> 1,
+    '*' -> 2, '/' -> 2,
+    '^' -> 3,
+    '!' -> 4, 
+    '(' -> 0, ')' -> 0
+  )
+
+  // generate token
+  def tokenize(expression: String): List[String] = {
+    val tokenRegex = """(sinh|cosh|tanh|sin|cos|tan|asin|acos|atan|log|ln|exp|√|π|e)|(\d+\.\d*|\d*\.?\d+)|[\+\-\*\/\^\(\)!]""".r
+    tokenRegex.findAllIn(expression.replaceAll(" ", "")).toList
+  }
+
+  // infix to postfix
+  def infixToPostfix(tokens: List[String]): List[String] = {
+    val stack = Stack[String]()
+    val result = scala.collection.mutable.ArrayBuffer[String]()
+
+    tokens.foreach { token =>
+      if (isNumber(token) || token == "π" || token == "e") {
+        result += (if (token == "π") Pi.toString else if (token == "e") E.toString else token)
+      } else if (isFunction(token)) {
+        stack.push(token)
+      } else if (token == "(") {
+        stack.push(token)
+      } else if (token == ")") {
+        while (stack.nonEmpty && stack.top != "(") {
+          result += stack.pop()
+        }
+        if (stack.nonEmpty && stack.top == "(") stack.pop()
+        if (stack.nonEmpty && isFunction(stack.top)) {
+          result += stack.pop()
+        }
+      } else if (token == "!") {
+        // adding factorial directly into postfix
+        result += "!"
+      } else {
+        while (stack.nonEmpty && precedence.getOrElse(stack.top.head, 0) >= precedence.getOrElse(token.head, 0)) {
+          result += stack.pop()
+        }
+        stack.push(token)
+      }
+    }
+
+    while (stack.nonEmpty) {
+      result += stack.pop()
+    }
+
+    result.toList
+  }
+
+  // postfix
+  def evaluatePostfix(postfix: List[String], radians: Boolean = true): BigDecimal = {
+    val stack = Stack[BigDecimal]()
+
+    postfix.foreach {
+      case num if isNumber(num) =>
+        stack.push(BigDecimal(num))
+      case func if isFunction(func) =>
+        if (stack.isEmpty) throw new IllegalArgumentException(s"Function $func has no operand")
+        val operand = stack.pop()
+        val result = func match {
+          case "sin"  => sin(if (radians) operand.toDouble else math.toRadians(operand.toDouble))
+          case "cos"  => cos(if (radians) operand.toDouble else math.toRadians(operand.toDouble))
+          case "tan"  => tan(if (radians) operand.toDouble else math.toRadians(operand.toDouble))
+          case "asin" =>
+            if (operand.toDouble < -1 || operand.toDouble > 1)
+              throw new IllegalArgumentException(s"Invalid input for asin: ${operand.toDouble}. Must be between -1 and 1.")
+            if (radians) asin(operand.toDouble) else math.toDegrees(asin(operand.toDouble))
+          case "acos" =>
+            if (operand.toDouble < -1 || operand.toDouble > 1)
+              throw new IllegalArgumentException(s"Invalid input for acos: ${operand.toDouble}. Must be between -1 and 1.")
+            if (radians) acos(operand.toDouble) else math.toDegrees(acos(operand.toDouble))
+          case "atan" => if (radians) atan(operand.toDouble) else math.toDegrees(atan(operand.toDouble))
+          case "sinh" => sinh(operand.toDouble)
+          case "cosh" => cosh(operand.toDouble)
+          case "tanh" => tanh(operand.toDouble)
+          case "log" =>
+            if (operand.toDouble <= 0)
+              throw new IllegalArgumentException(s"Invalid input for log: ${operand.toDouble}. Must be greater than 0.")
+            math.log10(operand.toDouble)
+          case "ln" =>
+            if (operand.toDouble <= 0)
+              throw new IllegalArgumentException(s"Invalid input for ln: ${operand.toDouble}. Must be greater than 0.")
+            math.log(operand.toDouble)
+          case "exp"  => math.exp(operand.toDouble)
+          case "√" =>
+            if (operand.toDouble < 0)
+              throw new IllegalArgumentException(s"Invalid input for √: ${operand.toDouble}. Must be non-negative.")
+            sqrt(operand.toDouble)
+          case _ => throw new IllegalArgumentException(s"Unsupported function: $func")
+        }
+        stack.push(BigDecimal(result))
+      case "!" =>
+        if (stack.isEmpty) throw new IllegalArgumentException("Factorial has no operand")
+        val operand = stack.pop().toInt
+        stack.push(BigDecimal(factorial(operand)))
+      case operator =>
+        if (stack.size < 2) throw new IllegalArgumentException(s"Operator $operator requires two operands")
+        val b = stack.pop()
+        val a = stack.pop()
+        val result = operator match {
+          case "+" => a + b
+          case "-" => a - b
+          case "*" => a * b
+          case "/" => a / b
+          case "^" => BigDecimal(math.pow(a.toDouble, b.toDouble))
+          case _   => throw new IllegalArgumentException(s"Unsupported operator: $operator")
+        }
+        stack.push(result)
+    }
+
+    if (stack.size != 1) throw new IllegalArgumentException("Invalid postfix expression")
+    stack.pop()
+  }
+  
+  // factorial part
+  def factorial(n: Int): BigInt = {
+    if (n == 0 || n == 1) BigInt(1)
+    else BigInt(n) * factorial(n - 1)
+  }
+  
+  //if token is number
+  def isNumber(str: String): Boolean = {
+    try {
+      BigDecimal(str)
+      true
+    } catch {
+      case _: NumberFormatException => false
+    }
+  }
+  def isFunction(func: String): Boolean = {
+    Set("sin", "cos", "tan", "asin", "acos", "atan", "sinh", "cosh", "tanh", "log", "ln", "exp", "√").contains(func)
+  }
+}
