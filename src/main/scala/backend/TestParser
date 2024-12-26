@@ -1,0 +1,19 @@
+//a program that i created to test parser validity if 
+//the program return the right token, infix and postfix without 
+// running the main App over and over again
+
+package backend
+
+object TestParser {
+  def main(args: Array[String]): Unit = {
+    val expression = ""
+    val tokens = Parser.tokenize(expression)
+    println(s"Tokens: ${tokens.mkString(" ")}") 
+
+    val postfix = Parser.infixToPostfix(tokens)
+    println(s"Postfix: ${postfix.mkString(" ")}")
+
+    val result = Parser.evaluatePostfix(postfix)
+    println(s"Result: $result") 
+  }
+}
