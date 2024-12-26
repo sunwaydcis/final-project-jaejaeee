@@ -1,0 +1,24 @@
+package backend
+
+object Utils {
+
+  val ALLOWED_KEYS: Set[Char] = Set('+', '-', '/', '*', '(', ')', '^', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.', '%')
+
+  val NON_OPERATORS: Set[String] = Set(")", "π", "e", "Ans")
+
+  val FUNCTIONS: Set[String] = Set("sin", "cos", "tan", "ln", "log", "√", "exp", "(", "asin", "acos", "atan")
+
+  def isValidExpression(expression: String): Boolean = {
+    val tokenRegex = """([a-zA-Z]+|[-+*/^()π\d.]+)""".r
+    val tokens = tokenRegex.findAllIn(expression).toList
+
+    tokens.forall { token =>
+      ALLOWED_KEYS.contains(token.head) ||
+        NON_OPERATORS.contains(token) ||
+        FUNCTIONS.contains(token) ||
+        token.matches("\\d+(\\.\\d+)?")
+    }
+  }
+
+  def cleanInput(input: String): String = input.replaceAll("\\s+", "")
+}
