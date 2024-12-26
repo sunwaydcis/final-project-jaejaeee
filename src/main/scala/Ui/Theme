@@ -1,0 +1,12 @@
+package ui
+
+import scalafx.scene.paint.Color
+
+object Theme {
+  val primaryColor = "#1E1E2F" 
+  val secondaryColor = "#2D2D48" 
+  val buttonColor = "#4C4C77" 
+  val buttonHoverColor = "#5E5E89" 
+  val textColor = "#FFFFFF" 
+  val accentColor = "#6A6AFF" 
+}
