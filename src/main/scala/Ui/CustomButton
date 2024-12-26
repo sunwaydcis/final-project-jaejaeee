@@ -1,0 +1,37 @@
+package ui
+
+import scalafx.scene.control.Button
+
+class CustomButton(text: String) extends Button(text) {
+  minWidth = 80
+  minHeight = 50
+
+  style = s"""
+    -fx-font-size: 16px;
+    -fx-background-color: ${Theme.buttonColor};
+    -fx-text-fill: ${Theme.textColor};
+    -fx-border-radius: 8px;
+    -fx-padding: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 5, 0, 0, 2);
+    -fx-font-family: "Arial Rounded MT Bold", sans-serif;
+  """
+
+  onMouseEntered = _ => style = s"""
+    -fx-font-size: 16px;
+    -fx-background-color: ${Theme.buttonHoverColor};
+    -fx-text-fill: ${Theme.textColor};
+    -fx-border-radius: 8px;
+    -fx-padding: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.7), 8, 0, 0, 2);
+    -fx-font-family: "Arial Rounded MT Bold", sans-serif;
+  """
+  onMouseExited = _ => style = s"""
+    -fx-font-size: 16px;
+    -fx-background-color: ${Theme.buttonColor};
+    -fx-text-fill: ${Theme.textColor};
+    -fx-border-radius: 8px;
+    -fx-padding: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 5, 0, 0, 2);
+    -fx-font-family: "Arial Rounded MT Bold", sans-serif;
+  """
+}
