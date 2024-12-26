@@ -1,0 +1,117 @@
+package frontend
+
+import scalafx.scene.control.{ToggleButton, TextField, Label}
+import scalafx.scene.layout.{VBox, GridPane, HBox}
+import scalafx.geometry.{Insets, Pos}
+import ui.{ButtonTexts, CustomButton, Theme}
+import backend.Parser
+
+class Home extends VBox {
+  style = s"-fx-background-color: ${Theme.primaryColor}; -fx-padding: 15px; -fx-spacing: 8px;"
+
+  private val inputField = new TextField {
+    promptText = "Enter expression"
+    alignment = Pos.CenterRight
+    style = s"""
+      -fx-font-size: 22px;
+      -fx-background-color: ${Theme.secondaryColor};
+      -fx-text-fill: ${Theme.textColor};
+      -fx-padding: 10px;
+      -fx-border-radius: 8px;
+    """
+  }
+
+  private val resultLabel = new Label {
+    text = "Result will appear here"
+    alignment = Pos.Center
+    style = s"""
+      -fx-font-size: 20px;
+      -fx-text-fill: ${Theme.textColor};
+      -fx-background-color: ${Theme.secondaryColor};
+      -fx-padding: 10px;
+      -fx-border-radius: 8px;
+    """
+  }
+
+  private val toggleRadians = new ToggleButton("Radians") {
+    selected = true
+    style = s"""
+      -fx-font-size: 14px;
+      -fx-background-color: ${Theme.accentColor};
+      -fx-text-fill: #FFFFFF;
+      -fx-border-radius: 8px;
+      -fx-padding: 6px;
+    """
+    onAction = _ => {
+      text = if (selected.value) "Radians" else "Degrees"
+    }
+  }
+
+  private val buttonGrid = new GridPane {
+    hgap = 5
+    vgap = 5
+    padding = Insets(5)
+
+    val buttons = Seq(
+      "7", "8", "9", "/", "sin",
+      "4", "5", "6", "*", "cos",
+      "1", "2", "3", "-", "tan",
+      "0", ".", "=", "+", "ln",
+      "(", ")", "^", "log", "exp",
+      "π", "√","!", "asin", "acos",
+      "atan", "sinh", "cosh", "tanh","Clear"
+    )
+
+    buttons.zipWithIndex.foreach {
+      case (buttonText, index) =>
+        val row = index / 5
+        val col = index % 5
+        val button = new CustomButton(ButtonTexts.getText(buttonText)) {
+          onAction = _ => handleButtonClick(buttonText)
+        }
+        add(button, col, row)
+    }
+  }
+
+  children = Seq(
+    new VBox {
+      spacing = 5
+      alignment = Pos.Center
+      children = Seq(inputField, resultLabel, toggleRadians)
+    },
+    buttonGrid
+  )
+
+  private def handleButtonClick(buttonText: String): Unit = {
+    buttonText match {
+      case "=" => calculateResult()
+      case "Clear" =>
+        inputField.clear()
+        resultLabel.text = "Result will appear here" 
+      case _ =>
+        inputField.text = inputField.text.value + buttonText
+    }
+  }
+
+  private def calculateResult(): Unit = {
+    val expression = inputField.text.value
+    if (expression.nonEmpty) {
+      try {
+        val tokens = Parser.tokenize(expression)
+        val postfix = Parser.infixToPostfix(tokens)
+        val radians = toggleRadians.selected.value
+        val result = Parser.evaluatePostfix(postfix, radians)
+
+        //result display
+        val formattedResult = result.bigDecimal.stripTrailingZeros().toPlainString
+        resultLabel.text = s"Result: $formattedResult"
+      } catch {
+        case e: Exception =>
+          resultLabel.text = "Error in expression"
+          println(s"Error: ${e.getMessage}")
+      }
+    } else {
+      resultLabel.text = "Invalid expression"
+    }
+  }
+}
