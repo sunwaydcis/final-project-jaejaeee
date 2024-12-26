@@ -1,0 +1,13 @@
+package backend
+
+import scala.collection.mutable.ListBuffer
+
+object History {
+  val history: ListBuffer[String] = ListBuffer()
+
+  def addToHistory(entry: String): Unit = {
+    history += entry
+  }
+
+  def getHistory: List[String] = history.toList
+}
