@@ -1,0 +1,15 @@
+package ui
+
+object ButtonTexts {
+  def getText(buttonId: String): String = buttonId match {
+    case "sin" => "sin"
+    case "cos" => "cos"
+    case "tan" => "tan"
+    case "ln"  => "ln"
+    case "log" => "log"
+    case "exp" => "exp"
+    case "π"   => "π"
+    case "√"   => "√"
+    case _     => buttonId
+  }
+}
