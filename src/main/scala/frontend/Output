@@ -1,0 +1,16 @@
+package frontend
+
+import scalafx.scene.control.Label
+import scalafx.scene.layout.VBox
+
+class Output extends VBox {
+  val resultLabel = new Label {
+    text = "Result will appear here"
+  }
+
+  children = Seq(resultLabel)
+
+  def updateResult(result: String): Unit = {
+    resultLabel.text = result
+  }
+}
