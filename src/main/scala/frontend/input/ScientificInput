@@ -1,0 +1,49 @@
+package frontend.input
+
+import scalafx.scene.control.{Button, TextField}
+import scalafx.scene.layout.HBox
+import backend.Parser
+
+class ScientificInput extends HBox {
+  val inputField = new TextField {
+    promptText = "Enter expression"
+  }
+
+  val buttons = Seq(
+    new Button("sin"), new Button("cos"), new Button("tan"),
+    new Button("ln"), new Button("log"), new Button("exp"),
+    new Button("√"), new Button("("), new Button(")"),
+    new Button("^"), new Button("+"), new Button("-"),
+    new Button("*"), new Button("/"), new Button("π"),
+    new Button("asin"), new Button("acos"), new Button("atan"),
+    new Button("sinh"), new Button("cosh"), new Button("tanh"),
+    new Button("="), new Button("Clear"), new Button("!")
+  )
+
+  buttons.foreach { button =>
+    button.onAction = _ => handleButtonClick(button.text())
+  }
+
+  children = inputField +: buttons
+
+  def handleButtonClick(buttonText: String): Unit = {
+    buttonText match {
+      case "=" => evaluateExpression(inputField.text())
+      case "Clear" => inputField.clear()
+      case _ => inputField.appendText(s" $buttonText ")
+    }
+  }
+
+  def evaluateExpression(expression: String): Unit = {
+    try {
+      val tokens = Parser.tokenize(expression)
+      val postfix = Parser.infixToPostfix(tokens)
+      val evaluationResult = Parser.evaluatePostfix(postfix)
+
+      println(s"Evaluation Result: $evaluationResult")
+    } catch {
+      case e: Exception =>
+        println(s"Error in evaluating expression: ${e.getMessage}")
+    }
+  }
+}
